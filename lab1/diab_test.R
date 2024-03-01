@@ -1,6 +1,6 @@
 library(tidyverse)
 
-diabetes_data <- read_csv("../diabetes_012_health_indicators_BRFSS2015.csv")
+diabetes_data <- read_csv("./diabetes_012_health_indicators_BRFSS2015.csv")
 
 binary_variables <- c(
   "Diabetes",
@@ -19,8 +19,7 @@ binary_variables <- c(
   "DiffWalk"
 )
 
-category_variables <- c("GenHlth", "Sex", "Age", 
-                        "Education", "Income")
+category_variables <- c("Age", "Education", "Income")
 
 gen.hlth_categories <- c("excellent", "very good",
                          "good", "fair", "poor")
@@ -52,13 +51,15 @@ diabetes_data <- diabetes_data %>%
   rename(Diabetes = Diabetes_012) %>%
   mutate(GenHlth = gen.hlth_categories[GenHlth]) %>%
   mutate(Sex = sex_categories[Sex+1]) %>%
+  mutate(Sex = factor(Sex)) %>%
   mutate(Age = age_categories[Age]) %>%
   mutate(Education = edc_categories[Education]) %>%
   mutate(Income = income_categories[Income]) %>%
+  mutate(GenHlth = factor(GenHlth, ordered = TRUE, levels = rev(gen.hlth_categories))) %>%
   mutate(
     across(all_of(binary_variables), as.logical),
-    across(all_of(category_variables), factor)
-  ) 
+    across(all_of(category_variables), ~ factor(.x, ordered = TRUE))
+  )
 
 str(diabetes_data, give.attr = FALSE)
 
