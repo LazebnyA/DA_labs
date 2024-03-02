@@ -55,21 +55,23 @@ diabetes_data <- read_csv("prepared_data.csv") %>%
   mutate(Income = factor(Income, ordered = TRUE, levels = income_categories)) %>%
   mutate(across(all_of(binary_variables), as.logical))
 
-count_by_sex <- diabetes_data %>%
-  group_by(Sex) %>%
+count_by_edc <- diabetes_data %>%
+  group_by(Education) %>%
   summarise(count = n())
 
 # Plot the distribution using ggplot2 with adjusted plot size and axis text size
-ggplot(count_by_sex, aes(x = Sex, y = count, fill = Sex)) + 
+ggplot(count_by_edc, aes(x = Education, y = count, fill = Education)) + 
   geom_bar(stat = "identity", position = "dodge", width = 1) + 
-  ggtitle("Sex distribution") +
-  xlab("Sex") +
+  ggtitle("Education categories distribution") +
+  xlab("Education category") +
   ylab("Count") +
-  scale_y_continuous(labels = scales::comma) 
+  scale_y_continuous(labels = scales::comma) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8)) +
+  geom_text(data = subset(count_by_edc, Education == "No education"), aes(label = count), vjust = -0.5)
 
 str(diabetes_data, give.attr = FALSE)
 
-ggsave("lab1/varDistr/img/category_sex_distr.jpg", plot = last_plot(), width = 8, height = 6, dpi = 300)
+ggsave("lab1/varDistr/img/category_education_distr.jpg", plot = last_plot(), width = 8, height = 6, dpi = 300)
 
 
 

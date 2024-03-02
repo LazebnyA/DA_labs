@@ -33,6 +33,7 @@ data <- data.frame(binary_plotting_vars, response, value)
 # Plot the distribution using ggplot2
 ggplot(data, aes(fill = response, y = value, x = binary_plotting_vars)) + 
   geom_bar(position = "dodge", stat = "identity") +
-  ggtitle("Binary variables distribution among responders")
+  ggtitle("Binary variables distribution among responders") +
+  scale_y_continuous(labels = scales::comma) 
 
 ggsave("lab1/varDistr/img/binary_lifestyle_distr.jpg", plot = last_plot(), width = 8, height = 6, dpi = 300)
