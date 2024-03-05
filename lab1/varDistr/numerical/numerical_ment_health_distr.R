@@ -57,22 +57,20 @@ diabetes_data <- read_csv("prepared_data.csv") %>%
 
 
 
-# Assuming 'diabetes_data' is your tibble with BMI values
-num_intervals <- ceiling(1 + log2(length(diabetes_data$BMI)))
-min_bmi <- min(diabetes_data$BMI, na.rm = TRUE)
-max_bmi <- max(diabetes_data$BMI, na.rm = TRUE)
-interval_width <- (max_bmi - min_bmi) / num_intervals
+num_intervals <- ceiling(1 + log2(length(diabetes_data$MentHlth)))
+min_ment_health_val <- min(diabetes_data$MentHlth)
+max_ment_health_val <- max(diabetes_data$MentHlth)
+interval_width <- (max_ment_health_val - min_ment_health_val) / num_intervals
 
-ggplot(diabetes_data, aes(x = BMI)) +
-  geom_histogram(binwidth = interval_width, fill = "skyblue", color = "black") +
-  geom_density(aes(y = ..count.. * interval_width), fill = "skyblue", color = "black", alpha = 0.3, bw = 1) +
-  scale_x_continuous(breaks = seq(0, max_bmi, by = 9), limits = c(0, max_bmi)) +  # Set x-axis limits from 0 to max_bmi
+ggplot(diabetes_data, aes(x = MentHlth)) +
+  geom_histogram(binwidth = round(interval_width), fill = "skyblue", color = "black", boundary = 0) +
+  scale_x_continuous(breaks = seq(0, 30, by = round(interval_width) * 2), limits = c(min_ment_health_val, max_ment_health_val)) +
   scale_y_continuous(labels = scales::comma) +
-  labs(title = "BMI Distribution",
-       x = "BMI",
-       y = "Frequency / Density") +
+  labs(title = "MentHlth Distribution",
+              x = "MentHlth",
+              y = "Frequency / Density") +
   theme_minimal()
 
 
-ggsave("lab1/varDistr/img/numerical_BMI_distr.jpg", plot = last_plot(), width = 8, height = 6, dpi = 300)
+ggsave("lab1/varDistr/img/numerical_ment_health_distr.jpg", plot = last_plot(), width = 8, height = 6, dpi = 300)
 
