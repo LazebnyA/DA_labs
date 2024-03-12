@@ -55,20 +55,26 @@ diabetes_data <- read_csv("prepared_data.csv") %>%
   mutate(Income = factor(Income, ordered = TRUE, levels = income_categories)) %>%
   mutate(across(all_of(binary_variables), as.logical))
 
-count_by_age <- diabetes_data %>%
+
+percent_chol_false <- diabetes_data %>%
   group_by(Age) %>%
-  summarise(count = n())
+  summarise(percent_chol_false = sum(CholCheck == FALSE) / n() * 100)
 
-ggplot(count_by_age, aes(x = Age, y = count, fill = Age)) + 
-  geom_bar(stat = "identity", position = "dodge", width = 1) + 
-  ggtitle("Age categories distribution") +
+total_percent_chol_false <- sum(percent_chol_false$percent_chol_false)
+
+
+chol_check_age_barchart3 <- ggplot(percent_chol_false, aes(x = Age, y = percent_chol_false)) +
+  geom_col(fill = "skyblue", width = 0.95) +
+  ggtitle("Percentage of people with CholCheck == FALSE by age group") +
   xlab("Age category") +
-  ylab("Count") +
-  scale_y_continuous(labels = scales::comma)
+  ylab("Percentage") +
+  scale_y_continuous(labels = scales::comma) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8))
 
-str(diabetes_data, give.attr = FALSE)
+print(chol_check_age_barchart3)
 
-ggsave("lab1/varDistr/img/category_age_distr.jpg", plot = last_plot(), width = 8, height = 6, dpi = 300)
+ggsave("lab1/thirdQ/img/chol_check_age_barchart3.jpg", plot = chol_check_age_barchart3, width = 8, height = 6, dpi = 300)
+
 
 
 

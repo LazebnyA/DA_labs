@@ -59,16 +59,29 @@ count_by_age <- diabetes_data %>%
   group_by(Age) %>%
   summarise(count = n())
 
-ggplot(count_by_age, aes(x = Age, y = count, fill = Age)) + 
-  geom_bar(stat = "identity", position = "dodge", width = 1) + 
+count_by_age_chol_false <- diabetes_data %>%
+  filter(CholCheck == FALSE) %>%
+  group_by(Age) %>%
+  summarise(count = n())
+
+combined_data <- rbind(
+  count_by_age %>% mutate(CholCheck = "TRUE"),
+  count_by_age_chol_false %>% mutate(CholCheck = "FALSE")
+)
+
+combined_plot <- ggplot(combined_data, aes(x = Age, y = count, fill = CholCheck)) +
+  geom_col(position = "identity", width = 0.95) +
   ggtitle("Age categories distribution") +
   xlab("Age category") +
   ylab("Count") +
-  scale_y_continuous(labels = scales::comma)
+  scale_y_continuous(labels = scales::comma) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8)) +
+  scale_fill_manual(values = c("TRUE" = "blue", "FALSE" = "red"), name = "CholCheck")
 
-str(diabetes_data, give.attr = FALSE)
+print(combined_plot)
 
-ggsave("lab1/varDistr/img/category_age_distr.jpg", plot = last_plot(), width = 8, height = 6, dpi = 300)
+ggsave("lab1/thirdQ/img/chol_check_age_barchart2.jpg", plot = combined_plot, width = 8, height = 6, dpi = 300)
+
 
 
 

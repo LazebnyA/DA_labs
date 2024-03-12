@@ -55,20 +55,27 @@ diabetes_data <- read_csv("prepared_data.csv") %>%
   mutate(Income = factor(Income, ordered = TRUE, levels = income_categories)) %>%
   mutate(across(all_of(binary_variables), as.logical))
 
-count_by_age <- diabetes_data %>%
-  group_by(Age) %>%
+
+# Создаем фрейм данных с всеми возможными комбинациями значений двух бинарных переменных
+binary_combinations <- expand.grid(CholCheck = c(TRUE, FALSE), AnyHealthcare = c(TRUE, FALSE))
+
+# Присоединяем фрейм данных к вашим данным
+diabetes_data_with_combinations <- merge(binary_combinations, diabetes_data, by = c("CholCheck", "AnyHealthcare"), all = TRUE)
+
+grouped_data <- diabetes_data_with_combinations %>%
+  group_by(CholCheck, AnyHealthcare) %>%
   summarise(count = n())
 
-ggplot(count_by_age, aes(x = Age, y = count, fill = Age)) + 
-  geom_bar(stat = "identity", position = "dodge", width = 1) + 
-  ggtitle("Age categories distribution") +
-  xlab("Age category") +
+chol_check_any_healthcare_barplot <- ggplot(grouped_data, aes(x = paste(CholCheck, AnyHealthcare), y = count, fill = paste(CholCheck, AnyHealthcare))) +
+  geom_bar(stat = "identity") +
+  xlab("CholCheck and AnyHealthcare") +
   ylab("Count") +
-  scale_y_continuous(labels = scales::comma)
+  ggtitle("Counts of CholCheck and AnyHealthcare combinations") +
+  scale_y_continuous(labels = scales::comma) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
 
-str(diabetes_data, give.attr = FALSE)
+chol_check_any_healthcare_barplot
 
-ggsave("lab1/varDistr/img/category_age_distr.jpg", plot = last_plot(), width = 8, height = 6, dpi = 300)
-
+ggsave("lab1/thirdQ/img/chol_check_any_healthcare.jpg", plot = chol_check_any_healthcare_barplot, width = 8, height = 6, dpi = 300)
 
 

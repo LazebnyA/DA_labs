@@ -35,5 +35,5 @@ ggplot(data, aes(fill=diabetes, y=value, x=nutrition_factor)) +
   geom_bar(position="dodge", stat="identity") +
   ggtitle("Number of diabetics among fruit and vegitables daily consumers")
 
-#ggsave("thirdQ/img/diab_among_fruit_veg.png", plot = last_plot(), width = 8, height = 6, dpi = 300)
+#ggsave("secondQ/img/diab_among_fruit_veg.png", plot = last_plot(), width = 8, height = 6, dpi = 300)
 

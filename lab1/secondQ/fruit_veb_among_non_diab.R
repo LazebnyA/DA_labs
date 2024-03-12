@@ -6,12 +6,12 @@ nutrition_factor <- c(rep("fruits", 2), rep("vegetables", 2))
 response <- rep(c("Yes", "No"), 2)
 
 fruits_data <- diabetes_data %>%
-  filter(Diabetes == TRUE) %>%
+  filter(Diabetes == FALSE) %>%
   group_by(Fruits) %>%
   summarise(count = n())
 
 veggies_data <- diabetes_data %>%
-  filter(Diabetes == TRUE) %>%
+  filter(Diabetes == FALSE) %>%
   group_by(Veggies) %>%
   summarise(count = n())
 
@@ -33,7 +33,7 @@ data <- data.frame(nutrition_factor,response,value)
 
 ggplot(data, aes(fill=response, y=value, x=nutrition_factor)) + 
   geom_bar(position="dodge", stat="identity") +
-  ggtitle("Consume Fruit, Vegetables 1 or more times per day? (among diabetics)")
+  ggtitle("Consume Fruit, Vegetables 1 or more times per day? (among non-diabetics)")
 
-#ggsave("thirdQ/img/fruit_veg_among_diab.png", plot = last_plot(), width = 8, height = 6, dpi = 300)
+ggsave("secondQ/img/fruit_veg_among_non_diab.png", plot = last_plot(), width = 8, height = 6, dpi = 300)
 

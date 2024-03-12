@@ -55,20 +55,22 @@ diabetes_data <- read_csv("prepared_data.csv") %>%
   mutate(Income = factor(Income, ordered = TRUE, levels = income_categories)) %>%
   mutate(across(all_of(binary_variables), as.logical))
 
-count_by_age <- diabetes_data %>%
+no_cholCheck <- diabetes_data %>%
+  filter(CholCheck == FALSE) %>%
   group_by(Age) %>%
   summarise(count = n())
 
-ggplot(count_by_age, aes(x = Age, y = count, fill = Age)) + 
+chol_check_age_barchart <- ggplot(no_cholCheck, aes(x = Age, y = count, fill = Age)) + 
   geom_bar(stat = "identity", position = "dodge", width = 1) + 
-  ggtitle("Age categories distribution") +
+  ggtitle("Age distribution among people that didn't have chol check in last 5 years.") +
   xlab("Age category") +
   ylab("Count") +
-  scale_y_continuous(labels = scales::comma)
+  scale_y_continuous(labels = scales::comma) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8)) 
 
-str(diabetes_data, give.attr = FALSE)
+chol_check_age_barchart
 
-ggsave("lab1/varDistr/img/category_age_distr.jpg", plot = last_plot(), width = 8, height = 6, dpi = 300)
+# ggsave("lab1/thirdQ/img/chol_check_age_barchart.jpg", plot = chol_check_age_barchart, width = 8, height = 6, dpi = 300)
 
 
-
+# розподіл майже не відрізняється
