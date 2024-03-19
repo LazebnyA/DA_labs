@@ -55,7 +55,8 @@ diabetes_data <- read_csv("prepared_data.csv") %>%
   mutate(Income = factor(Income, ordered = TRUE, levels = income_categories)) %>%
   mutate(across(all_of(binary_variables), as.logical))
 
-count_by_age <- diabetes_data %>%
+count_by_age_chol_true <- diabetes_data %>%
+  filter(CholCheck == TRUE) %>%
   group_by(Age) %>%
   summarise(count = n())
 
@@ -65,7 +66,7 @@ count_by_age_chol_false <- diabetes_data %>%
   summarise(count = n())
 
 combined_data <- rbind(
-  count_by_age %>% mutate(CholCheck = "TRUE"),
+  count_by_age_chol_true %>% mutate(CholCheck = "TRUE"),
   count_by_age_chol_false %>% mutate(CholCheck = "FALSE")
 )
 
@@ -75,8 +76,7 @@ combined_plot <- ggplot(combined_data, aes(x = Age, y = count, fill = CholCheck)
   xlab("Age category") +
   ylab("Count") +
   scale_y_continuous(labels = scales::comma) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8)) +
-  scale_fill_manual(values = c("TRUE" = "blue", "FALSE" = "red"), name = "CholCheck")
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 8)) 
 
 print(combined_plot)
 

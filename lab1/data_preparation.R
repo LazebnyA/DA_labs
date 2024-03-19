@@ -1,6 +1,6 @@
 library(tidyverse)
 
-diabetes_data <- read_csv("./diabetes_012_health_indicators_BRFSS2015.csv")
+diabetes_data <- read_csv("./diabetes_binary_health_indicators_BRFSS2015.csv")
 
 binary_variables <- c(
   "Diabetes",
@@ -48,7 +48,7 @@ income_categories <- c("Less than $10,000",
                        "$75,000 or more")
 
 diabetes_data <- diabetes_data %>%
-  rename(Diabetes = Diabetes_012) %>%
+  rename(Diabetes = Diabetes_binary) %>%
   mutate(
     GenHlth = gen.hlth_categories[GenHlth],
     GenHlth = factor(GenHlth, ordered = TRUE, levels = rev(gen.hlth_categories))

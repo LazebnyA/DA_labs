@@ -64,7 +64,7 @@ interval_width <- (max_phys_health_val - min_phys_health_val) / num_intervals
 
 ggplot(diabetes_data, aes(x = PhysHlth)) +
   geom_histogram(binwidth = round(interval_width), fill = "skyblue", color = "black", boundary = 0) +
-  scale_x_continuous(breaks = seq(0, 30, by = round(interval_width) * 2), limits = c(min_ment_health_val, max_ment_health_val)) +
+  scale_x_continuous(breaks = seq(0, 30, by = round(interval_width) * 2), limits = c(min_phys_health_val, max_phys_health_val)) +
   scale_y_continuous(labels = scales::comma) +
   labs(title = "PhysHlth Distribution",
        x = "PhysHlth",

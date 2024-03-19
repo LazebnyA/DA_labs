@@ -58,14 +58,17 @@ diabetes_data <- read_csv("prepared_data.csv") %>%
 
 ########################################################################################
 
-mean_bmi <- mean(diabetes_data$BMI)
-mean_ment_hlth <- mean(diabetes_data$MentHlth)
-mean_phys_hlth <- mean(diabetes_data$PhysHlth)
+summary_data_sd <- diabetes_data %>%
+  summarize(
+    SD_BMI = sd(BMI),
+    SD_Mental_Health = sd(MentHlth),
+    SD_Physical_Health = sd(PhysHlth)
+  ) %>%
+  pivot_longer(cols = c(starts_with("Mean_Value"), starts_with("SD")),
+               names_to = c(".value", "Variable"),
+               names_pattern = "(Mean_Value|SD)_(.*)")
 
-# Создание таблицы с средними значениями
-mean_data <- data.frame(
-  Variable = c("BMI", "Mental Health", "Physical Health"),
-  Mean_Value = c(mean_bmi, mean_ment_hlth, mean_phys_hlth)
-)
+summary_data_other <- summary(diabetes_data %>% select(where(is.numeric)))
 
-print(mean_data)
+print(summary_data_sd)
+print(summary_data_other)

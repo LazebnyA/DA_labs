@@ -1,6 +1,6 @@
 library(tidyverse)
 
-diabetes_data <- read_csv("test.csv")
+diabetes_data <- read_csv("prepared_data.csv")
 
 nutrition_factor <- c(rep("fruits", 2), rep("vegetables", 2))
 diabetes <- rep(c("Yes", "No"), 2)
