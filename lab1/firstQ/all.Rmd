@@ -1,0 +1,144 @@
+Імпортувати модулі для побудови графіків
+```{r}
+library(tidyverse)
+library(egg)
+library(GGally)
+```
+Імпортувати дані
+```{r}
+binary_variables <- c(
+  "Diabetes",
+  "HighBP", 
+  "HighChol", 
+  "CholCheck", 
+  "Smoker", 
+  "Stroke", 
+  "HeartDiseaseorAttack", 
+  "PhysActivity", 
+  "Fruits", 
+  "Veggies",
+  "HvyAlcoholConsump",
+  "AnyHealthcare",
+  "NoDocbcCost",
+  "DiffWalk"
+)
+
+category_variables <- c("Age", "Education", "Income")
+
+gen.hlth_categories <- c("excellent", "very good",
+                         "good", "fair", "poor")
+
+sex_categories <- c("female", "male")
+
+age_categories <- c("18-24", "25-29", "30-34", "35-39",
+                    "40-44", "45-49", "50-54", "55-59",
+                    "60-64", "65-69", "70-74", "75-79",
+                    "80+")
+
+edc_categories <- c("No education", 
+                    "Elementary", 
+                    "Some high school", 
+                    "High school graduate", 
+                    "Some college or tech. school", 
+                    "College graduate")
+
+income_categories <- c("Less than $10,000",
+                       "$10,000-$15,000",
+                       "$15,000-$20,000",
+                       "$20,000-$25,000",
+                       "$25,000-$35,000",
+                       "$35,000-$50,000",
+                       "$50,000-$75,000",
+                       "$75,000 or more")
+
+
+data <- read_csv("prepared_data.csv") %>%
+  mutate(Sex = factor(Sex)) %>%
+  mutate(GenHlth = factor(GenHlth, ordered = TRUE, levels = rev(gen.hlth_categories))) %>%
+  mutate(Sex = factor(Sex)) %>%
+  mutate(Age = factor(Age, ordered = TRUE, levels = age_categories)) %>%
+  mutate(Education = factor(Education, ordered = TRUE, levels = edc_categories)) %>%
+  mutate(Income = factor(Income, ordered = TRUE, levels = income_categories)) %>%
+  mutate(across(all_of(binary_variables), as.logical))
+```
+```{r}
+
+```
+Залежність наявності діабету від віку, статі, ІМТ та захворювань серця
+```{r}
+p <- ggplot(data, aes(x=factor(Age), y=log(BMI), color=HeartDiseaseorAttack)) +
+  geom_boxplot() +
+  facet_wrap(Sex~Diabetes) +
+  labs(x="Вік", y="ІМТ (log(кг/м^2))", subtitle="Залежність наявності діабету від віку, статі, ІМТ та захворювань серця", caption="(a) - жінки, здорові, (b) - жінки, хворі, (c) - чоловіки, здорові, (d) - чоловіки, хворі") +
+  theme(axis.title = element_text(size=14),
+        axis.text.x = element_text(size=14, angle = 90),
+        axis.text.y = element_text(size=14),
+        plot.subtitle = element_text(size = 14)) +
+        
+  geom_hline(yintercept = 2.918) +
+  geom_hline(yintercept = 3.215)
+tag_facet(p)
+```
+Залежність наявності діабету від віку, статі, ІМТ та артеріального тиску
+```{r}
+library(ggplot2)
+library(dplyr)
+library(egg)
+
+data <- read.csv("prepared_data.csv")
+
+p <- ggplot(data, aes(x=factor(Age), y=log(BMI), color=HighBP)) +
+  geom_boxplot() +
+  facet_wrap(Sex~Diabetes) +
+  labs(x="Вік", y="ІМТ (log(кг/м^2))", subtitle="Залежність наявності діабету від віку, статі, ІМТ та артеріального тиску", caption="(a) - жінки, здорові, (b) - жінки, хворі, (c) - чоловіки, здорові, (d) - чоловіки, хворі") +
+  theme(axis.title = element_text(size=14),
+        axis.text.x = element_text(size=14, angle = 90),
+        axis.text.y = element_text(size=14),
+        plot.subtitle = element_text(size = 14)) +
+        
+  geom_hline(yintercept = 2.918) +
+  geom_hline(yintercept = 3.215)
+tag_facet(p)
+```
+Залежність наявності діабету від віку, статі, ІМТ та рівня холестерину
+```{r}
+library(ggplot2)
+library(dplyr)
+library(egg)
+
+data <- read.csv("prepared_data.csv")
+
+p <- ggplot(data, aes(x=factor(Age), y=log(BMI), color=HighChol)) +
+  geom_boxplot() +
+  facet_wrap(Sex~Diabetes) +
+  labs(x="Вік", y="ІМТ (log(кг/м^2))", subtitle="Залежність наявності діабету від віку, статі, ІМТ та рівня холестерину", caption="(a) - жінки, здорові, (b) - жінки, хворі, (c) - чоловіки, здорові, (d) - чоловіки, хворі") +
+  theme(axis.title = element_text(size=14),
+        axis.text.x = element_text(size=14, angle = 90),
+        axis.text.y = element_text(size=14),
+        plot.subtitle = element_text(size = 14)) +
+        
+  geom_hline(yintercept = 2.918) +
+  geom_hline(yintercept = 3.215)
+tag_facet(p)
+```
+Залежність наявності діабету від віку, статі, ІМТ та пережитого інсульту
+```{r}
+library(ggplot2)
+library(dplyr)
+library(egg)
+
+data <- read.csv("prepared_data.csv")
+
+p <- ggplot(data, aes(x=factor(Age), y=log(BMI), color=Stroke)) +
+  geom_boxplot() +
+  facet_wrap(Sex~Diabetes) +
+  labs(x="Вік", y="ІМТ (log(кг/м^2))", subtitle="Залежність наявності діабету від віку, статі, ІМТ та пережитого інсульту", caption="(a) - жінки, здорові, (b) - жінки, хворі, (c) - чоловіки, здорові, (d) - чоловіки, хворі") +
+  theme(axis.title = element_text(size=14),
+        axis.text.x = element_text(size=14, angle = 90),
+        axis.text.y = element_text(size=14),
+        plot.subtitle = element_text(size = 14)) +
+        
+  geom_hline(yintercept = 2.918) +
+  geom_hline(yintercept = 3.215)
+tag_facet(p)
+```
