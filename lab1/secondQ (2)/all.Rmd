@@ -81,8 +81,8 @@ p <- ggplot(data,aes(x=nums[Income], y=Education, fill = AnyHealthcare),rotate =
   geom_density_ridges(stat="binline", bins=8, alpha = 0.5, position = "dodge") +
   labs(x="Дохід", y="Рівень освіти", subtitle="Залежність розподілу доходів від рівня освіти (мед. обстеження)", caption="(a) - немає діабету, (b) - діабет") +
   theme(axis.title = element_text(size=14),
-        axis.text.x = element_text(size=14, angle = 90),
-        axis.text.y = element_text(size=14),
+        axis.text.x = element_text(size=10, angle = 90),
+        axis.text.y = element_text(size=10),
         plot.subtitle = element_text(size = 14)) +
   facet_wrap(.~Diabetes)
 (tag_facet(p + scale_x_continuous(breaks=c(1,2,3,4,5,6,7,8),
@@ -94,8 +94,8 @@ p <- ggplot(data,aes(x=nums[Income], y=Education, fill = Fruits),rotate = 90) +
   geom_density_ridges(stat="binline", bins=8, alpha = 0.5, position = "dodge") +
   labs(x="Дохід", y="Рівень освіти", subtitle="Залежність розподілу доходів від рівня освіти (фрукти)", caption="(a) - немає діабету, (b) - діабет") +
   theme(axis.title = element_text(size=14),
-        axis.text.x = element_text(size=14, angle = 90),
-        axis.text.y = element_text(size=14),
+        axis.text.x = element_text(size=10, angle = 90),
+        axis.text.y = element_text(size=10),
         plot.subtitle = element_text(size = 14)) +
   facet_wrap(.~Diabetes)
 (tag_facet(p + scale_x_continuous(breaks=c(1,2,3,4,5,6,7,8),
@@ -107,8 +107,8 @@ p <- ggplot(data,aes(x=nums[Income], y=Education, fill = HvyAlcoholConsump),rota
   geom_density_ridges(stat="binline", bins=8, alpha = 0.5, position = "dodge") +
   labs(x="Дохід", y="Рівень освіти", subtitle="Залежність розподілу доходів від рівня освіти (алкоголь)", caption="(a) - немає діабету, (b) - діабет") +
   theme(axis.title = element_text(size=14),
-        axis.text.x = element_text(size=14, angle = 90),
-        axis.text.y = element_text(size=14),
+        axis.text.x = element_text(size=10, angle = 90),
+        axis.text.y = element_text(size=10),
         plot.subtitle = element_text(size = 14)) +
   facet_wrap(.~Diabetes)
 (tag_facet(p + scale_x_continuous(breaks=c(1,2,3,4,5,6,7,8),
@@ -120,8 +120,8 @@ p <- ggplot(data,aes(x=nums[Income], y=Education, fill = Smoker),rotate = 90) +
   geom_density_ridges(stat="binline", bins=8, alpha = 0.5, position = "dodge") +
   labs(x="Дохід", y="Рівень освіти", subtitle="Залежність розподілу доходів від рівня освіти (паління)", caption="(a) - немає діабету, (b) - діабет") +
   theme(axis.title = element_text(size=14),
-        axis.text.x = element_text(size=14, angle = 90),
-        axis.text.y = element_text(size=14),
+        axis.text.x = element_text(size=10, angle = 90),
+        axis.text.y = element_text(size=10),
         plot.subtitle = element_text(size = 14)) +
   facet_wrap(.~Diabetes)
 (tag_facet(p + scale_x_continuous(breaks=c(1,2,3,4,5,6,7,8),
@@ -133,8 +133,8 @@ p <- ggplot(data,aes(x=nums[Income], y=Education, fill = Veggies),rotate = 90) +
   geom_density_ridges(stat="binline", bins=8, alpha = 0.5, position = "dodge") +
   labs(x="Дохід", y="Рівень освіти", subtitle="Залежність розподілу доходів від рівня освіти (овочі)", caption="(a) - немає діабету, (b) - діабет") +
   theme(axis.title = element_text(size=14),
-        axis.text.x = element_text(size=14, angle = 90),
-        axis.text.y = element_text(size=14),
+        axis.text.x = element_text(size=10, angle = 90),
+        axis.text.y = element_text(size=10),
         plot.subtitle = element_text(size = 14)) +
   facet_wrap(.~Diabetes)
 (tag_facet(p + scale_x_continuous(breaks=c(1,2,3,4,5,6,7,8),
