@@ -1,7 +1,9 @@
 ```{r}
 library(tidyverse)
 ```
+
 Імпорт даних
+
 ```{r}
 binary_variables <- c(
   "Diabetes",
@@ -77,38 +79,59 @@ diabetes_data %>%  ggplot(aes(x = MentHlth, y = PhysHlth)) +
 diabetes_data %>%
   group_by(MentHlth) %>%
   summarize(PhysAverHlth = mean(PhysHlth), 
-            n = n(),
-            .groups = "drop") %>%
+            n = n()) %>%
   ggplot(aes(x = MentHlth, y = PhysAverHlth))  +
   labs(title = "Bar plot of Physical Health vs Mental Health") + 
   geom_col() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size=12))
+  
+diabetes_data %>%
+  group_by(MentHlth) %>%
+  summarize(PhysMedianHlth = median(PhysHlth), 
+            n = n()) %>%
+  ggplot(aes(x = MentHlth, y = PhysMedianHlth))  +
+  labs(title = "Bar plot of Physical Health vs Mental Health") + 
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size=12))
+  
 
 #ggsave("lab1/fifthQ/img/phys_health_ment_bar.jpg", plot = last_plot(), width = 8, height = 6, dpi = 300)
 ```
-Тобто в середньому чим вище ментальне здоров'я - тим вище фізичне
-Перевіримо в інший бік
+
+Тобто в середньому чим вище ментальне здоров'я - тим вище фізичне Перевіримо в інший бік
+
 ```{r}
 diabetes_data %>%
   group_by(PhysHlth) %>%
   summarize(MentAverHlth = mean(MentHlth), 
-            n = n(),
-            .groups = "drop") %>%
+            n = n()) %>%
   ggplot(aes(x = PhysHlth, y = MentAverHlth)) +
+  labs(title = "Bar plot of Mental Health vs Physical Health") + 
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size=12))
+
+diabetes_data %>%
+  group_by(PhysHlth) %>%
+  summarize(MentMedianHlth = median(MentHlth), 
+            n = n()) %>%
+  ggplot(aes(x = PhysHlth, y = MentMedianHlth)) +
   labs(title = "Bar plot of Mental Health vs Physical Health") + 
   geom_col() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size=12))
 
 #ggsave("lab1/fifthQ/img/ment_phys_health_bar.jpg", plot = last_plot(), width = 8, height = 6, dpi = 300)
 ```
-В інший бік залежність не така очевидна
-Спробуємо розбити на групи
+
+В інший бік залежність не така очевидна Спробуємо розбити на групи
 
 ```{r}
+breaks_list <- c(-1, 5, 10, 15, 20, 25, Inf)
+labels_list <- c("0-5", "5-10", "10-15", "15-20", "20-25", "25+")
+
 diabetes_data %>%
   mutate(
-    MentHlthCut = cut(MentHlth, breaks = c(-1, 5, 10, 15, 20, 25, Inf),
-                           labels = c("0-5", "5-10", "10-15", "15-20", "20-25", "25+"))
+    MentHlthCut = cut(MentHlth, breaks = breaks_list,
+                           labels = labels_list)
   )%>%
   group_by(MentHlthCut) %>%
   summarize(PhysAverHlth = mean(PhysHlth), 
@@ -116,19 +139,38 @@ diabetes_data %>%
             .groups = "drop") %>%
   drop_na() %>%
   ggplot(aes(x = MentHlthCut, y = PhysAverHlth)) +
-  labs(title = "Bar plot of grouped Physical Health vs Mental Health") + 
-  geom_col() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, size=12))
+    labs(title = "Bar plot of grouped Physical Health vs Mental Health") + 
+    geom_col() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1, size=12))
+
+diabetes_data %>%
+  mutate(
+    MentHlthCut = cut(MentHlth, breaks = breaks_list,
+                           labels = labels_list)
+  )%>%
+  group_by(MentHlthCut) %>%
+  summarize(PhysMedianHlth = median(PhysHlth), 
+            n = n(),
+            .groups = "drop") %>%
+  drop_na() %>%
+  ggplot(aes(x = MentHlthCut, y = PhysMedianHlth)) +
+    labs(title = "Bar plot of grouped Physical Health vs Mental Health") + 
+    geom_col() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1, size=12))
 
 #ggsave("lab1/fifthQ/img/phys_health_ment_grouped_bar.jpg", plot = last_plot(), width = 8, height = 6, dpi = 300)
 ```
+
 Залежність виділяється
 
 ```{r}
+breaks_list <- c(-1, 5, 10, 15, 20, 25, Inf)
+labels_list <- c("0-5", "5-10", "10-15", "15-20", "20-25", "25+")
+
 diabetes_data %>%
   mutate(
-    PhysHlthCut = cut(PhysHlth, breaks = c(-1, 5, 10, 15, 20, 25, Inf),
-                           labels = c("0-5", "5-10", "10-15", "15-20", "20-25", "25+"))
+    PhysHlthCut = cut(PhysHlth, breaks = breaks_list,
+                           labels = labels_list)
   )%>%
   group_by(PhysHlthCut) %>%
   summarize(MentAverHlth = mean(MentHlth), 
@@ -139,6 +181,23 @@ diabetes_data %>%
   labs(title = "Bar plot of grouped Mental Health vs Physical Health") + 
   geom_col() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size=12))
+
+
+diabetes_data %>%
+  mutate(
+    PhysHlthCut = cut(PhysHlth, breaks = breaks_list,
+                           labels = labels_list)
+  )%>%
+  group_by(PhysHlthCut) %>%
+  summarize(MentMedianHlth = median(MentHlth), 
+            n = n(),
+            .groups = "drop") %>%
+  drop_na() %>%
+  ggplot(aes(x = PhysHlthCut, y = MentMedianHlth)) +
+  labs(title = "Bar plot of grouped Mental Health vs Physical Health") + 
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size=12))
+
 
 #ggsave("lab1/fifthQ/img/ment_phys_health_grouped_bar.jpg", plot = last_plot(), width = 8, height = 6, dpi = 300)
 ```
@@ -159,6 +218,7 @@ diabetes_data %>%
 
 #ggsave("lab1/fifthQ/img/ment_phys_health_boxplot.jpg", plot = last_plot(), width = 8, height = 6, dpi = 300)
 ```
+
 ```{r}
 diabetes_data %>%
   mutate(
@@ -173,4 +233,3 @@ diabetes_data %>%
 
 #ggsave("lab1/fifthQ/img/phys_health_ment_boxplot.jpg", plot = last_plot(), width = 8, height = 6, dpi = 300)
 ```
-
