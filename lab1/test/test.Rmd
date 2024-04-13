@@ -561,6 +561,33 @@ physhlth_genhlth_boxplot
 Особливої різниці немає.
 
 
+Додаток до питання 6. Боксплот залежності оцінки стану здоров'я від віку.
+
+```{r}
+
+menthlth_age_boxplot <- ggplot(diabetes_data, aes(x = Age, y = MentHlth, color = Diabetes)) +
+  geom_boxplot() +
+  labs(
+    title = "Mental Health by Age category",
+    x = "Age",
+    y = "Mental Health"  
+  ) +
+  theme_minimal()
+
+physhlth_age_boxplot <- ggplot(diabetes_data, aes(x = Age, y = PhysHlth, color = Diabetes)) +
+  geom_boxplot() +
+  labs(
+    title = "Physical Health by Age category",
+    x = "Age",
+    y = "Physical Health"  
+  ) +
+  theme_minimal()
+
+menthlth_age_boxplot
+physhlth_age_boxplot
+
+```
+
 
 Додаткове питання 1 - Залежність ІМТ від ментального, фізичного стану здоров'я:
 

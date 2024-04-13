@@ -74,6 +74,14 @@ only_diabets %>%
   geom_point() +
   labs(title = "Scatter plot of Physical Health vs Mental Health with age-based colors")
 
+only_diabets %>%
+  group_by(Age) %>%
+  summarise(MentHlthMedian = median(MentHlth),
+            PhysHlthMedian = median(PhysHlth)) %>%
+  ggplot(aes(x = MentHlthMedian, y = PhysHlthMedian, color = Age)) + 
+  geom_jitter(width=0.01, height=0.01) +
+  labs(title = "Scatter plot of Physical Health vs Mental Health with age-based colors")
+
 #ggsave("lab1/sixthQ/img/phys_health_ment_age_grouped_scatter.jpg", plot = last_plot(), width = 8, height = 6, dpi = 300)
 ```
 Можна побачити, що чим старше людина, тим гірше ментальне здоров'я (і те починаючи з 55 років)
@@ -81,9 +89,15 @@ only_diabets %>%
 ```{r}
 only_diabets %>%
   group_by(Age) %>%
-  summarise(MentHlthAver = mean(MentHlth),
-            PhysHlthAver = mean(PhysHlth)) %>%
+  summarise(PhysHlthAver = mean(PhysHlth)) %>%
   ggplot(aes(x = Age, y = PhysHlthAver)) +
+  geom_col() +
+  labs(title = "Bar plot of grouped Physical Health vs Age")
+
+only_diabets %>%
+  group_by(Age) %>%
+  summarise(PhysHlthMedian = median(PhysHlth)) %>%
+  ggplot(aes(x = Age, y = PhysHlthMedian)) +
   geom_col() +
   labs(title = "Bar plot of grouped Physical Health vs Age")
 
@@ -92,14 +106,26 @@ only_diabets %>%
 ```{r}
 only_diabets %>%
   group_by(Age) %>%
-  summarise(MentHlthAver = mean(MentHlth),
-            PhysHlthAver = mean(PhysHlth)) %>%
+  summarise(MentHlthAver = mean(MentHlth)) %>%
   ggplot(aes(x = Age, y = MentHlthAver)) +
+  geom_col() +
+  labs(title = "Bar plot of grouped Mental Health vs Age")
+
+only_diabets %>%
+  group_by(Age) %>%
+  summarise(MentHlthMedian = median(MentHlth)) %>%
+  ggplot(aes(x = Age, y = MentHlthMedian)) +
   geom_col() +
   labs(title = "Bar plot of grouped Mental Health vs Age")
 
 #ggsave("lab1/sixthQ/img/ment_health_age_grouped_bar.jpg", plot = last_plot(), width = 8, height = 6, dpi = 300)
 ```
+```{r}
+
+
+
+```
+
 
 ```{r}
 library(plotly)
@@ -117,7 +143,7 @@ scatter_plot <- plot_ly(data = plot_data, x = ~MentHlthAver, y = ~PhysHlthAver, 
                       zaxis = list(title = "Age")),
          title = "3D Scatter plot of Physical Health vs Mental Health by Age Grouped")
 
-saveWidget(scatter_plot, file = "lab1/sixthQ/img/3d_scatter_plot_Ment_Phys_Age_grouped.html")
+saveWidget(scatter_plot, file = "img/3d_scatter_plot_Ment_Phys_Age_grouped.html")
 
 scatter_plot <- plot_ly(data = only_diabets, x = ~MentHlth, y = ~PhysHlth, z = ~Age, color = ~Age,
                         type = "scatter3d", mode = "markers") %>%
@@ -126,7 +152,7 @@ scatter_plot <- plot_ly(data = only_diabets, x = ~MentHlth, y = ~PhysHlth, z = ~
                       zaxis = list(title = "Age")),
          title = "3D Scatter plot of Physical Health vs Mental Health by Age")
 
-saveWidget(scatter_plot, file = "lab1/sixthQ/img/3d_scatter_plot_Ment_Phys_Age.html")
+saveWidget(scatter_plot, file = "img/3d_scatter_plot_Ment_Phys_Age.html")
 ```
 
 

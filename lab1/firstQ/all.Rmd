@@ -1,10 +1,13 @@
 Імпортувати модулі для побудови графіків
+
 ```{r}
 library(tidyverse)
 library(egg)
 library(GGally)
 ```
+
 Імпортувати дані
+
 ```{r}
 binary_variables <- c(
   "Diabetes",
@@ -61,10 +64,13 @@ data <- read_csv("prepared_data.csv") %>%
   mutate(Income = factor(Income, ordered = TRUE, levels = income_categories)) %>%
   mutate(across(all_of(binary_variables), as.logical))
 ```
+
 ```{r}
 
 ```
+
 Залежність наявності діабету від віку, статі, ІМТ та захворювань серця
+
 ```{r}
 p <- ggplot(data, aes(x=factor(Age), y=log(BMI), color=HeartDiseaseorAttack)) +
   geom_boxplot() +
@@ -79,7 +85,9 @@ p <- ggplot(data, aes(x=factor(Age), y=log(BMI), color=HeartDiseaseorAttack)) +
   geom_hline(yintercept = 3.215)
 tag_facet(p)
 ```
+
 Залежність наявності діабету від віку, статі, ІМТ та артеріального тиску
+
 ```{r}
 library(ggplot2)
 library(dplyr)
@@ -100,7 +108,9 @@ p <- ggplot(data, aes(x=factor(Age), y=log(BMI), color=HighBP)) +
   geom_hline(yintercept = 3.215)
 tag_facet(p)
 ```
+
 Залежність наявності діабету від віку, статі, ІМТ та рівня холестерину
+
 ```{r}
 library(ggplot2)
 library(dplyr)
@@ -121,7 +131,9 @@ p <- ggplot(data, aes(x=factor(Age), y=log(BMI), color=HighChol)) +
   geom_hline(yintercept = 3.215)
 tag_facet(p)
 ```
+
 Залежність наявності діабету від віку, статі, ІМТ та пережитого інсульту
+
 ```{r}
 library(ggplot2)
 library(dplyr)
