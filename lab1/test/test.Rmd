@@ -402,40 +402,21 @@ ggplot(diabetes_data, aes(x = PhysHlth)) +
 
 summary_data_sd <- diabetes_data %>%
   summarize(
+    Var_BMI = var(BMI),
     SD_BMI = sd(BMI),
+    Var_Mental_Health = var(MentHlth),
     SD_Mental_Health = sd(MentHlth),
+    Var_Physical_Health = var(PhysHlth),
     SD_Physical_Health = sd(PhysHlth)
   ) %>%
-  pivot_longer(cols = c(starts_with("Mean_Value"), starts_with("SD")),
+  pivot_longer(cols = c(starts_with("SD"), starts_with("Var")),
                names_to = c(".value", "Variable"),
-               names_pattern = "(Mean_Value|SD)_(.*)")
-
-# Function to bootstrap the median
-bootstrap_median <- function(x, n_bootstraps = 1000) {
-  replicate(n_bootstraps, median(sample(x, replace = TRUE)))
-}
-
-# Bootstrap the median for each variable
-bootstrap_results <- diabetes_data %>%
-  summarise(
-    Boot_Median_BMI = bootstrap_median(BMI),
-    Boot_Median_Mental_Health = bootstrap_median(MentHlth),
-    Boot_Median_Physical_Health = bootstrap_median(PhysHlth)
-  )
-
-# Calculate the standard deviation of the bootstrapped medians
-summary_data_sd_median <- bootstrap_results %>%
-  summarise(
-    SD_Median_BMI = sd(Boot_Median_BMI),
-    SD_Median_Mental_Health = sd(Boot_Median_Mental_Health),
-    SD_Median_Physical_Health = sd(Boot_Median_Physical_Health)
-  )
+               names_pattern = "(SD|Var)_(.*)")
 
 summary_data_other <- summary(diabetes_data %>% select(where(is.numeric)))
 
 print(summary_data_sd)
 print(summary_data_other)
-print(summary_data_sd_median)
 ```
 
 
@@ -443,13 +424,20 @@ print(summary_data_sd_median)
 
 ```{r}
 
-data <- read_csv('diabetes_binary_health_indicators_BRFSS2015.csv')
+continuous_vars <- c("BMI", "MentHlth", "PhysHlth")
 
-correlations_continuous <- cor(data[c("BMI", "MentHlth", "PhysHlth")], method = "spearman")
+correlations_continuous <- cor(diabetes_data[continuous_vars], method = "spearman")
 
-correlations_continuous_category <- cor(data[c("BMI", "MentHlth", "PhysHlth", "GenHlth", "Age", "Education", "Income")])
 
-correlations_all <- cor(data, method = "spearman")
+continuous_ord_factors <- diabetes_data[c("BMI", "PhysHlth", "MentHlth", "GenHlth", "Age", "Education", "Income")]
+
+continuous_ord_factors$GenHlth <- as.numeric(diabetes_data$GenHlth)
+continuous_ord_factors$Age <- as.numeric(diabetes_data$Age)
+continuous_ord_factors$Education <- as.numeric(diabetes_data$Education)
+continuous_ord_factors$Income <- as.numeric(diabetes_data$Income)
+
+correlations_continuous_category <- cor(continuous_ord_factors[c("BMI", "PhysHlth", "MentHlth", "GenHlth", "Age", "Education", "Income")], method = "spearman")
+
 
 # Лише неперервні змінні.
 
@@ -460,14 +448,6 @@ ggcorrplot(correlations_continuous, hc.order = TRUE, type = "lower",
 
 ggcorrplot(correlations_continuous_category, hc.order = TRUE, type = "lower",
    lab = TRUE)
-
-
-# Усі змінні.
-
-all_cor_plot <- ggcorrplot(correlations_all, hc.order = TRUE, type = "lower", outline.col = "white") +
-  theme(axis.text.x = element_text(size = 6), axis.text.y = element_text(size = 6))
-
-all_cor_plot
 
 ```
 
