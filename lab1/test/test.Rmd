@@ -349,6 +349,37 @@ ggplot(count_by_phys_hlth, aes(x = PhysHlth, y = count, fill = PhysHlth)) +
   scale_y_continuous(labels = scales::comma) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8)) 
 
+# PhysHlth/MentHlth grouped
+
+breaks_list <- c(-1, 1, 5, 10, 15, 20, 25, Inf)
+labels_list <- c("0", "1-5", "6-10", "11-15", "16-20", "21-25", "26+")
+
+diabetes_data %>%
+  mutate(
+    MentHlthCut = cut(MentHlth, breaks = breaks_list,
+                      labels = labels_list)
+  ) %>%
+  ggplot(aes(x = MentHlthCut, y = ..count.., fill = MentHlthCut)) + 
+  geom_bar(position = "dodge", width = 1) + 
+  ggtitle("MentHlth grouped categories distribution") +
+  xlab("MentHlth category") +
+  ylab("Count") +
+  scale_y_continuous(labels = scales::comma) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
+
+
+diabetes_data %>%
+  mutate(
+    PhysHlthCut = cut(PhysHlth, breaks = breaks_list,
+                      labels = labels_list)
+  ) %>%
+  ggplot(aes(x = PhysHlthCut, y = ..count.., fill = PhysHlthCut)) + 
+  geom_bar(position = "dodge", width = 1) + 
+  ggtitle("PhysHlth grouped categories distribution") +
+  xlab("PhysHlth category") +
+  ylab("Count") +
+  scale_y_continuous(labels = scales::comma) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
 
 ```
 
@@ -391,6 +422,14 @@ ggplot(diabetes_data, aes(x = BMI)) +
        y = "Frequency / Density") +
   theme_minimal()
 
+ggplot(diabetes_data, aes(x = log(BMI))) +
+  geom_histogram(binwidth = 0.1, fill = "skyblue", color = "black", alpha = 0.7) +
+  labs(
+    title = "Distribution of Log(BMI)",
+    x = "Log(BMI)",
+    y = "Frequency"
+  ) +
+  theme_minimal()
 
 #____
 
@@ -596,7 +635,6 @@ cross_tables_comparison <- function(x_var1, x_var2, text_size=10) {
   x_var_sym1 <- rlang::sym(x_var1)
   x_var_sym2 <- rlang::sym(x_var2)
 
-  # Initialize expand_grid_vars as an empty list
   expand_grid_vars <- list()
 
   expand_grid_vars[[as.character(x_var_sym1)]] <- c(TRUE, FALSE)
@@ -623,15 +661,14 @@ cross_tables_comparison <- function(x_var1, x_var2, text_size=10) {
       legend.title = element_text(size=text_size-2),
       legend.text = element_text(size=text_size-2),
       axis.title.x = element_text(size=text_size)
-    ) 
+    ) +
+    labs(fill = paste0(x_var1, " x ", x_var2)) 
 }
 
 variable_names <- c("HighChol", "HighBP", "Stroke", "HeartDiseaseorAttack")
 
-# Map function to create plots
 plots_list <- map(variable_names, ~ cross_tables_comparison("Diabetes", .x, 8))
 
-# Arrange the plots in a grid
 grid.arrange(grobs = plots_list, ncol = 2)
 
 ```
@@ -667,26 +704,22 @@ barchart_comparison <- function(x_var1, x_var2, output_tables=FALSE, reverse_x=F
 variable_names <- c("HighChol", "HighBP", "Stroke", "HeartDiseaseorAttack")
 
 # Map function to create plots
-plots_list <- map(variable_names, ~ barchart_comparison("Diabetes", .x))
+plots_list <- map(variable_names, ~ barchart_comparison("Diabetes", .x, output_tables=TRUE))
 
 # Arrange the plots in a grid
 grid.arrange(grobs = plots_list, ncol = 2)
 
 ```
 
-Графік #1. 22% проти 8% - різниця 14%. Різниця - несуттєва. 
-Графік #2. 24% проти 6% - різниця 18%. Різниця більша на 4% в порівнянні з високим холестирином. Можна перевірити вплив HighChol x HighBP на наявність діабету. 
-Графік #3. 32% проти 13% - різниця 19%. 
-Графік #4. 32% проти 12% - різниця 20%.
 
-Можна перевірити зв'язок між змінними HeartDiseaseorAttack і Stroke.
+Зв'язок між змінними HeartDiseaseorAttack і Stroke.
 
 ```{r}
 #1
 cross_tables_comparison("HeartDiseaseorAttack", "Stroke", 10)
 
 #2, #3
-grid.arrange(barchart_comparison("HeartDiseaseorAttack", "Stroke"), barchart_comparison("Stroke", "HeartDiseaseorAttack"),ncol = 2, widths = c(0.6, 0.5))
+grid.arrange(barchart_comparison("HeartDiseaseorAttack", "Stroke", output_tables = TRUE), barchart_comparison("Stroke", "HeartDiseaseorAttack", output_tables = TRUE),ncol = 2, widths = c(0.6, 0.5))
 
 ```
 
@@ -707,11 +740,11 @@ grid.arrange(barchart_comparison("HeartDiseaseorAttack", "Stroke"), barchart_com
 cross_tables_comparison("HighBP", "HighChol", 10)
 
 #2, 3
-grid.arrange(barchart_comparison("HighBP", "HighChol"), barchart_comparison("HighChol", "HighBP"), ncol = 2, widths = c(1, 1))
+grid.arrange(barchart_comparison("HighBP", "HighChol", output_tables = TRUE), barchart_comparison("HighChol", "HighBP", output_tables = TRUE), ncol = 2, widths = c(1, 1))
 
 ```
 
-Пояснення до #1: Як бачимо з датасету, найбільшу частку складають люди в яких немає проблем ні з високим тиском, ні з високим рівнем холестирину. Але якщо взяти частку людей в яких є хоч один з цих недугів (що складає 60% серед всіх респондентів в датасеті), вона перевищить частку здорових людей на 20%.
+Пояснення до #1: Як бачимо з датасету, найбільшу частку складають люди в яких немає проблем ні з високим тиском, ні з високим рівнем холестирину. Але якщо взяти частку людей в яких є хоч одна з цих проблем (що складає 60% серед всіх респондентів в датасеті), вона перевищить частку здорових людей на 20%.
 
 Пояснення до #2: Серед людей з високим рівнем холестирину, частка людей з високим тиском значно перевищує частку людей, в яких немає проблем з високим тиском (на 20%). А в порівнянні з часткою людей з високим тиском серед людей з низькоим рівнем холестирину різниця складає 30%! Має місце залежність.
 
@@ -725,22 +758,11 @@ grid.arrange(barchart_comparison("HighBP", "HighChol"), barchart_comparison("Hig
 barchart_comparison("Diabetes", "Age")
 ```
 
-Інтерпретація: Найбільша частка діабетиків серед вікової категорії 70-74 роки, найменша ж серед молодих людей 18-24 років. Як можна бачити з графіку - чим вища вікова категорія (чим старші люди), тим вища частка хворих на діабет в цій категорії і нижча частка здорових. Має місце залежність.
-
 ------------------------------------------------------------------------
 
 Залежність наявності діабету від ІМТ. Правильніше сказати особливості розподілу ІМТ серед групи людей не хворих на діабет та хворих на діабет.
 
 ```{r}
-
-log_bmi_hist <- ggplot(diabetes_data, aes(x = log(BMI))) +
-  geom_histogram(binwidth = 0.1, fill = "skyblue", color = "black", alpha = 0.7) +
-  labs(
-    title = "Distribution of Log10(BMI)",
-    x = "Log10(BMI)",
-    y = "Frequency"
-  ) +
-  theme_minimal()
 
 bmi_diabetes_boxplot <- ggplot(diabetes_data, aes(x = factor(Diabetes), y = BMI, color = Diabetes)) +
   geom_boxplot() +
@@ -759,19 +781,26 @@ log_bmi_diabetes_boxplot <- ggplot(diabetes_data, aes(x = factor(Diabetes), y = 
     x = "Diabetes",
     y = "log(BMI)"  
   ) +
+  geom_hline(yintercept = 2.918) +
+  geom_hline(yintercept = 3.215) +
   theme_minimal()
 
-log_bmi_hist
-
 grid.arrange(bmi_diabetes_boxplot, log_bmi_diabetes_boxplot, ncol = 2)
+
+ggplot(diabetes_data, aes(x = factor(Diabetes), y = log(BMI), fill = factor(Diabetes))) +
+  geom_violin() +
+  geom_hline(yintercept = 2.918) +
+  geom_hline(yintercept = 3.215) +
+  labs(title = "Розподіл ІМТ в залежності від того, чи хвора людина на цукровий діабет", x = "Diabetes", y = "log(BMI)", fill = "Diabetes")
+
 
 ```
 
 
-
-Додаток до цього. "Вусаті скриньки" до відповідних бінарних змінних, що стосуються стану здоров'я, від яких залежить наявність діабету.
-
+Залежність наявності діабету від статі
 ```{r}
+
+barchart_comparison("Diabetes", "Sex", output_tables = TRUE)
 
 ```
 
@@ -889,8 +918,6 @@ grid.arrange(barchart_comparison("Diabetes", "fruit_not_veggies"),
 
 ```
 
-Як можна побачити значну частку датасету складають люди, які мають в своєму раціоні і фрукти і овочі (близько 50%), а людей які не їдять ні фруктів ні овочей насправді доволі мало (10%). Щодо другого графіку. Частка діабетиків більша серед людей які не мають в своєму раціоні ні фруктів ні овочей (приблизно 16%) в порівнянні з часткою людей які їдять і овощі і фрукти, але ця частка є доволі малою, тому немає сенсу далі розглядати залежність між ціма змінними, вона є зовсім не суттєвою.
-
 Залежність наявності діабету, від способу життя. (Чи є курцем, чи займаєтсья фізичними активностями)
 
 ```{r}
@@ -911,10 +938,7 @@ grid.arrange(barchart_comparison("Diabetes", "Smoker"),
 
 ```
 
-Щодо #1 графіку. Частка діабетиків серед курців більша від частини серед не курців на 4%. 
-Щодо #2 графіку. Частка діабетиків серед людей які займаються фізичними активностями (крім роботи) менша за частку серед людей які не займаються на 10%. 
-Щодо #3 графіку. Частка діабетиків серед алкоголіків менша ніж серед не алкоголіків. Різниця - 10%. Відмінності не є суттєвими. Залежності немає. 
-Щодо #4 графіку. Частка діабетиків серед людей, яким важко ходити, більша ніж серед людей, які не мають проблем з ходьбою. Різниця - 20%. Найбільш впливовою виявилась саме змінна DiffWalk, можна сказати що має місце залежність з цією змінною, але все ж ця змінна може залежити від інших.
+
 
 ------------------------------------------------------------------------
 
@@ -923,9 +947,9 @@ grid.arrange(barchart_comparison("Diabetes", "Smoker"),
 ```{r}
 barchart_comparison("Diabetes", "Income", reverse_x=TRUE)
 
-# barchart_comparison("Diabetes", "AnyHealthcare")
+barchart_comparison("Diabetes", "AnyHealthcare")
 
-# barchart_comparison("Diabetes", "NoDocbcCost")
+barchart_comparison("Diabetes", "NoDocbcCost")
 ```
 
 Інтерпретація: Серед бідніших більша частка діабетиків ніж серед багатших. Чим вища категорія заробітної плати тим менша частка діабетиків серед людей цієї категорії.
@@ -942,8 +966,6 @@ barchart_comparison("Diabetes", "Education", reverse_x=TRUE)
 ```
 
 Інтерпретація: Найбільша частка діабетиків серед людей з низьким рівнем освіти. Чим нижчий рівень освіти - тим більша кількість діабетиків. Проте, рівень освіти пов'язаний з рівнем доходів, а як вже було показано вище серед людей з меншим рівнем доходу - більше діабетиків.
-
-\*Додаток. Залежність рівня освіти від рівня доходів.
 
 
 
@@ -966,8 +988,6 @@ barchart_comparison("AnyHealthcare", "Income", reverse_x=TRUE, output_tables=TRU
 barchart_comparison("NoDocbcCost", "Income", reverse_x=TRUE, output_tables=TRUE)
 ```
 
-Інтерпретація: Чим нижчий дохід, тим більша частка людей без медичного страхування, але вона все одно доволі мала. Найбільша частка 12.5% без страховки серед людей, що заробляють менше 10.000\$.
-
 ------------------------------------------------------------------------
 
 ## Питання 4. Залежність наявності діабету від суб'єктивної оцінки стану здоров'я. Порівняння із залежністю наявності діабету від об'єктивних факторів: імт, тиску, чи є хвороби серця і того, чи важко людині ходити (чи завищують/занижують люди оцінку власного здоров'я).
@@ -980,12 +1000,6 @@ barchart_comparison("Diabetes", "GenHlth", output_tables = TRUE)
 
 ```
 
-Частка діабетиків серед людей, які оцінили свій стан здоров'я як поганий найбільша, якщо порівнювати з іншими категоріями. І прослідковується залежність - чим вища оцінка, тим менша частка діабетиків серед категорії респондентів. Різниця між часткою діабетиків в poor і в excellent: 37,9% - 2,5% = 35,4%. При переході до вищої категорії, різниці складають: 7% - 14% - 10% - 5%
-
-
-Чи завищують, занижують люди оцінку власного здоров'я.
-
-Для цього перевіримо частку людей з високим рівнем холестирину, високим тиском, серцево-судинними захворюваннями, в яких був інсульт, яким важко ходити, в яких низький рівень активності, імт поза межами норми в залежності від категорії.
 
 ```{r}
 
@@ -1022,21 +1036,6 @@ log_bmi_genhlth_boxplot
 
 ```
 
-Графік #1. За критерієм високого рівня холестирину в крові, люди завищують оцінку свого стану здоров'я. Якщо інтерпретувати цей графік з іншої точки зору, тенденція зберігається - чим вища оцінка, тим менше людей з високим рівнем холестирину.
-
-Графік #2. За критерієм високого тиску, завищують, але не так як на графіку #1. Тенденція зберігається.
-
-Графік #3. За критерієм наявності серцево-судинних захворювань/чи був серцевий напад, не завищують. Тенденція зберігається.
-
-Графік #4. Не інформативно, оскільки, в вибірці відносно мало людей в яких Stroke = TRUE. Тенденція - зберігається.
-
-Графік #5. В категорії poor частка людей, яким важко ходити складає більшість - 75%. Якщо дивитися на графік, то за цим критерієм люди дають доволі справедливу оцінку.
-
-Графік #6. За цим критерієм люди частіше занижують оцінку власного здоров'я. Так, частка людей, які займаються фізичними активностями серед людей, які оцінили свій стан здоров'я як поганий, не суттєва в порівнянні з тими, хто займається (майже 50 на 50).
-
-Графік #7. В poor і fair категоріях розподіли майже не відрізнаються. Але можна прослідкувати, що чим вища категорія - тим нижчий імт. А медіанне ІМТ для poor відрізнається від медіанного ІМТ для excellent на 5.
-
-
 
 
 Додаткове питання 1 - Залежність ІМТ від ментального, фізичного стану здоров'я:
@@ -1071,6 +1070,15 @@ physhlth_genhlth_boxplot
 
 ```
 
+Додаткове питання 3. Залежність наявності діабету від змінних CholCheck, NoDocbcCost.
+
+```{r}
+
+grid.arrange(barchart_comparison("Diabetes", "CholCheck", output_tables = TRUE), barchart_comparison("Diabetes", "NoDocbcCost", output_tables = TRUE),ncol = 2, widths = c(0.6, 0.5))
+
+
+```
+
 ## Питання 5. Чи впливає поганий ментальний стан на низький рівень фізичного здоров'я.
 
 
@@ -1079,8 +1087,6 @@ physhlth_genhlth_boxplot
 ggplot(diabetes_data, aes(x = MentHlth, y = PhysHlth)) + 
   geom_point(alpha=0.01) +
   labs(title = "Scatter plot of Physical Health vs Mental Health")
-
-# Scatter plot with count as size
 
 data_summary <- diabetes_data %>%
   group_by(MentHlth, PhysHlth) %>%
@@ -1106,7 +1112,7 @@ data_summary <- diabetes_data %>%
 max_count <- max(data_summary$Count)
 
 ggplot(data_summary, aes(x=PhysHlth, y=MentHlth)) +
-  geom_raster(aes(fill = Count)) +  # Use geom_raster() instead of geom_tile()
+  geom_raster(aes(fill = Count)) +  
   scale_fill_distiller(palette = "YlGnBu", direction = 1) +
   labs(title = "Dependence of Mental Health on Physical Health",
        x = "Physical Health",
@@ -1118,6 +1124,7 @@ ggplot(data_summary, aes(x=PhysHlth, y=MentHlth)) +
 
 
 ```
+
 
 Особливої залежності не бачимо, спробуємо інші типи графіків
 
@@ -1145,6 +1152,7 @@ diabetes_data %>%
 
 Щодо вибіркового середнього:
 Чим вище значення ментального здоров'я (чим більше днів людина мала погане ментальне здоров'я), тим вищий показник середнього PhysMeanHlth (кількість днів, коли у людини була травма, або людина була хвора, або почувала себе фізично погано).
+
 
 ```{r}
 
@@ -1209,6 +1217,44 @@ diabetes_data %>%
 
 Залежність виділяється
 
+Побудуємо теплову карту для згрупованих змінних
+```{r}
+
+breaks_list <- c(-1, 1, 5, 10, 15, 20, 25, Inf)
+labels_list <- c("0", "1-5", "6-10", "11-15", "16-20", "21-25", "26+")
+
+color_palette <- brewer.pal(9, "YlOrRd")
+
+data_summary <- diabetes_data %>%
+  mutate(
+    MentHlthCut = cut(MentHlth, breaks = breaks_list,
+                      labels = labels_list)
+  ) %>%
+  mutate(
+    PhysHlthCut = cut(PhysHlth, breaks = breaks_list,
+                      labels = labels_list)
+  ) %>%
+  group_by(MentHlthCut, PhysHlthCut) %>%
+  summarise(Count = n())
+
+max_count <- max(data_summary$Count)
+
+breaks <- c(10000, 50000, 100000, 125000)
+labels <- c("10,000", "50,000", "100,000", "125,000")
+
+ggplot(data_summary, aes(x = PhysHlthCut, y = MentHlthCut)) +
+  geom_raster(aes(fill = Count)) +  
+  scale_fill_distiller(palette = "YlGnBu", direction = 1, breaks = breaks, labels = labels) +
+  labs(title = "Dependence of Mental Health on Physical Health",
+       x = "Physical Health",
+       y = "Mental Health") +
+  coord_fixed() +
+  theme_minimal() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+```
+
 
 ```{r}
 
@@ -1247,32 +1293,6 @@ diabetes_data %>%
 
 Тобто залежність існує і в зворотньому напрямку
 
-```{r}
-
-diabetes_data %>%
-  mutate(
-    PhysHlthCut = cut(PhysHlth, breaks = c(-1, 5, 10, 15, 20, 25, Inf),
-                           labels = c("0-5", "5-10", "10-15", "15-20", "20-25", "25+"))
-  )%>%
-  
-  ggplot(aes(x = PhysHlthCut, y = MentHlth)) +
-  labs(title = "Box plot of grouped Mental Health vs Physical Health") + 
-  geom_boxplot() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, size=12))
-
-
-diabetes_data %>%
-  mutate(
-    MentHlthCut = cut(MentHlth, breaks = c(-1, 5, 10, 15, 20, 25, Inf),
-                           labels = c("0-5", "5-10", "10-15", "15-20", "20-25", "25+"))
-  )%>%
-  
-  ggplot(aes(x = MentHlthCut, y = PhysHlth)) +
-  labs(title = "Box plot of grouped Physical Health vs Mental Health") + 
-  geom_boxplot() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, size=12))
-
-```
 
 
 # Питання 6. Залежність ментального здоров'я, оцінки фізичного здоров'я, від віку серед людей, які хворіють на діабет.
@@ -1291,10 +1311,10 @@ only_diabets %>%
 
 only_diabets %>%
   group_by(Age) %>%
-  summarise(MentHlthMedian = median(MentHlth),
-            PhysHlthMedian = median(PhysHlth)) %>%
+  summarise(MentHlthMedian = round(median(MentHlth, na.rm = TRUE)),
+            PhysHlthMedian = round(median(PhysHlth, na.rm = TRUE))) %>%
   ggplot(aes(x = MentHlthMedian, y = PhysHlthMedian, color = Age)) + 
-  geom_jitter(width=0.01, height=0.01) +
+  geom_jitter(width = 0.01, height = 0.01) +
   labs(title = "Scatter plot of Physical Health vs Mental Health with age-based colors")
 
 ```
@@ -1316,7 +1336,7 @@ only_diabets %>%
 
 only_diabets %>%
   group_by(Age) %>%
-  summarise(PhysHlthMedian = median(PhysHlth)) %>%
+  summarise(PhysHlthMedian = round(median(PhysHlth))) %>%
   ggplot(aes(x = Age, y = PhysHlthMedian)) +
   geom_col() +
   labs(title = "Bar plot of grouped Physical Health vs Age")
@@ -1330,6 +1350,13 @@ only_diabets %>%
   group_by(Age) %>%
   summarise(MentHlthAver = mean(MentHlth)) %>%
   ggplot(aes(x = Age, y = MentHlthAver)) +
+  geom_col() +
+  labs(title = "Bar plot of grouped Mental Health vs Age")
+
+only_diabets %>%
+  group_by(Age) %>%
+  summarise(MentHlthMedian = median(MentHlth)) %>%
+  ggplot(aes(x = Age, y = MentHlthMedian)) +
   geom_col() +
   labs(title = "Bar plot of grouped Mental Health vs Age")
 
@@ -1386,4 +1413,6 @@ scatter_plot <- plot_ly(data = only_diabets, x = ~MentHlth, y = ~PhysHlth, z = ~
 saveWidget(scatter_plot, file = "img/3d_scatter_plot_Ment_Phys_Age.html")
 
 ```
+
+
 
