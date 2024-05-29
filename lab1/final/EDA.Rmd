@@ -1,4 +1,8 @@
 
+# Імпорт бібліотек. Імпорт даних та підготовка
+
+
+Імпорт бібліотек 
 
 ```{r}
 
@@ -14,6 +18,7 @@ library(glue)
 
 
 ```
+
 
 Імпорт даних та підготовка.
 
@@ -69,7 +74,6 @@ write_csv(diabetes_data, "prepared_data.csv")
 ###1. Змінні, що стосуються факторів ризику.
 
 ```{r}
-#1. Змінні, що стосуються факторів ризику.
 
 binary_vars <- c("Diabetes", "HighBP", "HighChol", "Stroke", "HeartDiseaseorAttack")
 
@@ -426,7 +430,7 @@ print(summary_data_other)
 
 ```{r}
 
-# фільтр Гампеля
+# Фільтр Гампеля
 
 outliers <- diabetes_data %>% filter(BMI < median(BMI) - 3*mad(BMI) | BMI > median(BMI) + 3*mad(BMI)) %>%
   arrange(desc(BMI))
@@ -440,7 +444,7 @@ glue("Interval: [{min(comp$BMI)}, {max(comp$BMI)}]")
 ```
 
 ```{r}
-# правило трьох сигм
+# Правило трьох сигм
 
 outliers <- diabetes_data %>% filter(BMI < mean(BMI) - 3*sd(BMI) | BMI > mean(BMI) + 3*sd(BMI)) %>%
   arrange(desc(BMI))
@@ -524,7 +528,7 @@ continuous_ord_factors$PhysHlth <- as.numeric(diabetes_data$PhysHlth)
 correlations_continuous_category <- cor(continuous_ord_factors[c("BMI", "PhysHlth", "MentHlth", "GenHlth", "Age", "Education", "Income")], method = "spearman")
 
 
-# Неперервні + впорядковані категорії.
+# Неперервні змінні + впорядковані категорії.
 
 ggcorrplot(correlations_continuous_category, hc.order = TRUE, type = "lower",
    lab = TRUE)
@@ -968,9 +972,8 @@ grid.arrange(barchart_comparison("Diabetes", "CholCheck", output_tables = TRUE),
 
 ```
 
+_______________________________________________________________________________________________________________
 
-
-------------------------------------------------------------------------
 
 ## Питання 4. Залежність наявності діабету від суб'єктивної оцінки стану здоров'я. Порівняння із залежністю наявності діабету від об'єктивних факторів: імт, тиску, чи є хвороби серця і того, чи важко людині ходити (чи завищують/занижують люди оцінку власного здоров'я).
 
@@ -1022,6 +1025,7 @@ log_bmi_genhlth_boxplot
 ```
 
 
+_______________________________________________________________________________________________________________
 
 
 ## Питання 5. Чи впливає поганий ментальний стан на низький рівень фізичного здоров'я.
@@ -1244,9 +1248,7 @@ ggplot(data_summary, aes(x = PhysHlthCut, y = MentHlthCut)) +
 ```
 
 
-
-Тобто залежність існує і в зворотньому напрямку
-
+_______________________________________________________________________________________________________________
 
 
 ## Питання 6. Залежність ментального здоров'я, оцінки фізичного здоров'я, від віку серед людей, які хворіють на діабет.
