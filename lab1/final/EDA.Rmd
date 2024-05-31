@@ -15,7 +15,7 @@ library(egg)
 library(plotly)
 library(htmlwidgets)
 library(glue)
-
+library(tables)
 
 ```
 
@@ -411,15 +411,20 @@ ggplot(diabetes_data, aes(x = log(BMI))) +
 
 ```{r}
 # Обчислення підсумкових характеристик
+conflicts()
+
+str(diabetes_data)
 
 summary_data_sd <- diabetes_data %>%
   summarize(
-    Var_BMI = var(BMI),
-    SD_BMI = sd(BMI)
+    Var_BMI = var(BMI, na.rm = TRUE),  
+    SD_BMI = sd(BMI, na.rm = TRUE)     
   ) %>%
-  pivot_longer(cols = c(starts_with("SD"), starts_with("Var")),
-               names_to = c(".value", "Variable"),
-               names_pattern = "(SD|Var)_(.*)")
+  pivot_longer(
+    cols = c(starts_with("SD"), starts_with("Var")),
+    names_to = c(".value", "Variable"),
+    names_pattern = "(SD|Var)_(.*)"
+  )
 
 summary_data_other <- summary(diabetes_data %>% select(BMI))
 
@@ -596,6 +601,11 @@ p <- ggplot(diabetes_data, aes(x=factor(Age), y=log(BMI), color=Stroke)) +
   geom_hline(yintercept = 2.918) +
   geom_hline(yintercept = 3.215)
 tag_facet(p)
+
+table(diabetes_data$Stroke, diabetes_data$Age, diabetes_data$Diabetes, diabetes_data$Sex, dnn = c("Stroke", "Age", "Diabetes", "Sex"))
+
+prop.table(table(diabetes_data$Diabetes, diabetes_data$Stroke, dnn = c("Diabetes", "Stroke")), 2)
+
 
 ```
 ### Ізольовані залежності 
@@ -800,8 +810,6 @@ p <- ggplot(diabetes_data,aes(x=nums[Income], y=Education, fill = AnyHealthcare)
                      labels=labs)))
 
 
-
-
 p <- ggplot(diabetes_data,aes(x=nums[Income], y=Education, fill = Fruits),rotate = 90) +
   geom_density_ridges(stat="binline", bins=8, alpha = 0.5, position = "dodge") +
   labs(x="Дохід", y="Рівень освіти", subtitle="Залежність розподілу доходів від рівня освіти (фрукти)", caption="(a) - немає діабету, (b) - діабет") +
@@ -846,10 +854,40 @@ p <- ggplot(diabetes_data,aes(x=nums[Income], y=Education, fill = Veggies),rotat
 (tag_facet(p + scale_x_continuous(breaks=c(1,2,3,4,5,6,7,8),
                                   labels=labs)))
 
+
 ```
 
 
 ### Ізольовані залежності
+
+Таблиці
+
+```{r}
+
+# Освіта
+table(diabetes_data$Diabetes, diabetes_data$Education, dnn = c("Diabetes", "Education"))
+prop.table(table(diabetes_data$Diabetes, diabetes_data$Education, dnn = c("Diabetes", "Education")), 2)
+
+# Доходи 
+table(diabetes_data$Diabetes, diabetes_data$Income, dnn = c("Diabetes", "Income"))
+prop.table(table(diabetes_data$Diabetes, diabetes_data$Income, dnn = c("Diabetes", "Income")), 2)
+
+# Медичні послуги
+prop.table(table(diabetes_data$Diabetes, diabetes_data$AnyHealthcare, dnn = c("Diabetes", "AnyHealthcare")), 2)
+
+# Вживання алкоголю
+prop.table(table(diabetes_data$Diabetes, diabetes_data$HvyAlcoholConsump, dnn = c("Diabetes", "HvyAlcoholConsump")), 2)
+
+# Паління
+prop.table(table(diabetes_data$Diabetes, diabetes_data$Smoker, dnn = c("Diabetes", "Smoker")), 2)
+
+# Вживання овочів
+prop.table(table(diabetes_data$Diabetes, diabetes_data$Veggies, dnn = c("Diabetes", "Veggies")), 2)
+
+# Вживання фруктів
+prop.table(table(diabetes_data$Diabetes, diabetes_data$Fruits, dnn = c("Diabetes", "Fruits")), 2)
+
+```
 
 #### Візуалізація №1. Залежність діабету від рівня освіти.
 
