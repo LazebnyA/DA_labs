@@ -1,0 +1,301 @@
+Лабораторна робота №3. Код.
+
+```{r}
+
+library(tidyverse)
+library(car)
+library(stargazer)
+library(broom)
+library(sandwich)
+library(lmtest)
+library(margins)
+
+```
+
+Для здійснення регресійного аналізу, потрібне чисельне представлення відповідних впорядкованих факторів (категорій) та бінарних змінних (0, 1).
+
+```{r}
+# 
+# 
+# Зчитування даних з файлу
+diabetes_data <- read_csv("./prepared_data.csv")
+
+# Категоріальні змінні
+gen.hlth_categories <- c("excellent", "very good", "good", "fair", "poor")
+age_categories <- c("18-24", "25-29", "30-34", "35-39", "40-44", "45-49", "50-54", "55-59", "60-64", "65-69", "70-74", "75-79", "80+")
+edc_categories <- c("No education", "Elementary", "Some high school", "High school graduate", "Some college or tech. school", "College graduate")
+income_categories <- c("Less than $10,000", "$10,000-$15,000", "$15,000-$20,000", "$20,000-$25,000", "$25,000-$35,000", "$35,000-$50,000", "$50,000-$75,000", "$75,000 or more")
+
+# Обробка даних
+diabetes_data <- diabetes_data %>%
+  mutate(across(c("Diabetes", "HighBP", "HighChol", "CholCheck", "Smoker", "Stroke", "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "DiffWalk"), as.factor)) %>%
+  mutate(GenHlth = factor(GenHlth, levels = gen.hlth_categories)) %>%
+  mutate(Age = factor(Age, levels = age_categories)) %>%
+  mutate(Education = factor(Education, levels = edc_categories)) %>%
+  mutate(Income = factor(Income, levels = income_categories)) %>%
+  mutate(Sex = factor(Sex, levels = c("female", "male"))) %>%
+  mutate(log_BMI = log(BMI))
+
+str(diabetes_data, give.attr = FALSE, show_col_types = FALSE)
+summary(diabetes_data)
+
+```
+
+Моделювання
+Дослідницьке питання: Чи впливає високий ІМТ, високий рівень тиску, холестерину, наявність серцево-судинних захворювань, рівень доходів, наявність фруктів/овочей в раціоні, особливості способу життя, суб'єктивна оцінка на наявність діабету. 
+- Залежна змінна - Diabetes, тому що на етапі EDA, дослідницькі питання були зосереджені на поверхневому огляді впливу різних факторів на наявність діабету.
+- Незалежні змінні - по мірі важливості - BMI, Age, HighChol, HighBP, HeartDiseaseorAttack, DiffWalk, Income, GenHlth, MentHlth, PhysHlth, Fruits, Veggies, Sex
+- Невраховані змінні, які можуть вести до порушення умови про нульове
+умовне сподiвання похибки: CholCheck - може залежати від одного з регресорів, наприклад від високого рівня холестерину, Smoker - може залежати від складності в ходьбі, фізичному здоров'ї, фізичною активністю, Stroke - може залежати від серцево-судинних захворювань, віку,
+HvyAlcoholConsump - MentHlth, Age - можливість споживати багато алкоголю без наслідків, 
+AnyHealthcare, NoDocbcCost, Education - Income
+- В ідеалі було б мати такі контрольні змінні які були б пов'язані з анамнезом людини, зокрема щоб виділити досить важливий генетичний фактор, також щоб виділити більше таких факторів як HighChol, HighBP, HeartDiseaseorAttack, що пов'язані з безпосереднім станом здоров'я респондента, та історією його обстежень, хвороби. Також в ідеалі було б мати більш детальні змінні пов'язані з його харчуванням, наприклад чи дотримується людина певної дієти.
+- Гіпотези щодо знаків коефіцієнтів відповідної структурної моделі.
+1. BMI: +
+2. Age: чим більша категорія тим менше значення коефіцієнту, на останніх категоріях +
+3. HighChol: +
+4. HighBP: +
+5. HeartDiseaseorAttack: +
+6. DiffWalk: +
+7. Income: чим більша категорія тим менше значення коефіцієнту, на останніх категоріях -
+8. GenHlth: чим більша категорія тим менше значення коефіцієнту, на останніх категоріях -
+9. MentHlth, PhysHlth: зі зростанням на одиницю, ймовірність діабету повинна зростати, знак +
+10. Fruits, Veggies: -
+11. Sex: чоловіки +, жінки 0
+
+
+Побудуємо графік (діаграму розсіювання): ІМТ - відносна частота діабету.
+
+```{r}
+
+diabetes_freq <- diabetes_data %>%
+  group_by(BMI) %>%
+  summarise(diabetes_rate = mean(as.numeric(Diabetes) - 1))
+
+# Побудова графіку з лінійною шкалою
+ggplot(diabetes_freq, aes(x = BMI, y = diabetes_rate)) +
+  geom_point(size = 1, color = "blue", alpha = 0.5) +
+  labs(title = "Відносна частота діабетиків в залежності від значення ІМТ",
+       x = "Індекс маси тіла (ІМТ). Логарифмічна шкала.",
+       y = "Відносна частота діабетиків") +
+  theme_minimal()
+
+# Побудова графіку з логарифмічною шкалою
+diabetes_freq <- diabetes_data %>%
+  group_by(BMI) %>%
+  summarise(diabetes_rate = mean(as.numeric(Diabetes) - 1))
+
+ggplot(diabetes_freq, aes(x = log(BMI), y = diabetes_rate)) +
+  geom_point(size = 1, color = "blue", alpha = 0.5) +
+  labs(title = "Відносна частота діабетиків в залежності від значення ІМТ",
+       x = "Індекс маси тіла (ІМТ). Логарифмічна шкала.",
+       y = "Відносна частота діабетиків") +
+  geom_vline(xintercept = log(18.5), linetype = "dashed", color = "red") +
+  geom_vline(xintercept = log(25), linetype = "dashed", color = "red") +
+  theme_minimal()
+
+```
+
+Оберемо варіант з логаритмізацією шкали.
+
+Побудуємо поліном 
+
+```{r}
+
+# Обробка даних
+diabetes_freq <- diabetes_data %>%
+  group_by(BMI) %>%
+  summarise(diabetes_rate = mean(as.numeric(Diabetes) - 1))
+
+# Побудова графіку з логарифмічною шкалою та поліномом третього порядку
+ggplot(diabetes_freq, aes(x = log(BMI), y = diabetes_rate)) +
+  geom_point(size = 1, color = "blue", alpha = 0.5) +
+  geom_smooth(method = "glm", formula = y ~ poly(x, 3), color = "red", se = FALSE) +
+  labs(title = "Відносна частота діабетиків в залежності від значення ІМТ (логарифмічна шкала)",
+       x = "Логарифм Індексу маси тіла (ІМТ)",
+       y = "Відносна частота діабетиків") +
+  geom_vline(xintercept = log(18.5), linetype = "dashed", color = "red") +
+  geom_vline(xintercept = log(25), linetype = "dashed", color = "red") +
+  theme_minimal()
+
+
+```
+
+
+Побудова першої базової моделі
+
+```{r}
+
+#diabetes_data$log_BMI <- scale(log(diabetes_data$BMI), center = TRUE, scale = FALSE)
+diabetes_data$log_BMI <- log(diabetes_data$BMI)
+
+diabetes_data$BMI_more_than_normal <- ifelse(diabetes_data$BMI > 25, TRUE, FALSE)
+diabetes_data$BMI_more_than_normal <- factor(diabetes_data$BMI_more_than_normal, levels = c(FALSE, TRUE))
+
+diabetes_data$MentHlth_more_than_zero <- ifelse(diabetes_data$MentHlth > 0, TRUE, FALSE)
+diabetes_data$MentHlth_more_than_zero <- factor(diabetes_data$MentHlth_more_than_zero, levels = c(FALSE, TRUE))
+
+diabetes_data$PhysHlth_more_than_zero <- ifelse(diabetes_data$PhysHlth > 0, TRUE, FALSE)
+diabetes_data$PhysHlth_more_than_zero <- factor(diabetes_data$PhysHlth_more_than_zero, levels = c(FALSE, TRUE))
+ 
+#vif(logit_model)
+
+logit_model <- glm(Diabetes ~ log_BMI + Age + HighChol + HighBP + PhysActivity + HeartDiseaseorAttack + DiffWalk + Income + GenHlth + MentHlth + PhysHlth + Fruits + Veggies + Sex, 
+                   data = diabetes_data, 
+                   family = binomial(link = "logit"))
+
+# Vivid rezultatov modeli
+model_hc1 <- coeftest(logit_model, vcov. = vcovHC(logit_model, "HC1"))
+
+# Перевірка стійкості моделі (якщо потрібно, додаткові взаємодії)
+model_mult <- update(logit_model, . ~ . + Education + CholCheck + Smoker + Stroke + HvyAlcoholConsump + AnyHealthcare + NoDocbcCost)
+
+#vif(model_mult)
+
+model_mult_hc1 <- coeftest(model_mult, vcov. = vcovHC(model_mult, "HC1"))
+
+model_final <- update(model_mult, . ~ . + I(log_BMI^3) + I(log_BMI^2) + I(HighBP * HighChol) + Fruits * Veggies + Stroke * HeartDiseaseorAttack + MentHlth * PhysHlth + BMI_more_than_normal + MentHlth_more_than_zero + PhysHlth_more_than_zero + Fruits * Veggies)
+# vif(model_final)
+model_final_hc1 <- coeftest(model_final, vcov. = vcovHC(model_final, "HC1"))
+
+
+stargazer(logit_model, model_mult, model_final, type = "latex",
+          title = "Multiple Regression", label = "table:evals-reg-mult",
+          dep.var.labels = c("Diabetes"),
+          dep.var.caption = "",
+          se = list(model_hc1[, 2], model_mult_hc1[, 2], model_final_hc1[, 2]))
+
+```
+
+```{r}
+
+
+```
+
+
+Перевірка Гіпотез. Оскільки має місце логістична регресія, потрібно обчислити маржинальні ефекти в середньому для кожної з моделей
+
+```{r}
+
+variables <- c("HighChol", "HighBP", "HeartDiseaseorAttack", "Stroke",
+               "PhysActivity", "Fruits",
+               "Veggies", "MentHlth", "PhysHlth")
+# "BMI_more_than_normal", 
+# Convert specified variables to numeric
+
+margins_logit <- summary(margins(logit_model))
+margins_mult <- summary(margins(model_mult))
+margins_final <- summary(margins(model_final))
+
+variable_names <- unique(c(margins_logit$factor, margins_mult$factor, margins_final$factor))
+
+# Create data frames for each model's marginal effects
+margins_logit_df <- data.frame(Variable_name = margins_logit$factor, Base_Model = margins_logit$AME)
+margins_mult_df <- data.frame(Variable_name = margins_mult$factor, Control_Model = margins_mult$AME)
+margins_final_df <- data.frame(Variable_name = margins_final$factor, Final_Model = margins_final$AME)
+
+# Merge the data frames
+marginal_effects <- full_join(full_join(margins_logit_df, margins_mult_df, by = "Variable_name"), margins_final_df, by = "Variable_name")
+
+# Print the table
+print(marginal_effects)
+
+```
+
+
+
+Перевірка Гіпотез. Тестування на спільну значущість груп коефіцієнтів.
+
+Ступені регресора log(BMI) вище 1 (Чи справді має місце нелінійність)
+
+```{r}
+linearHypothesis(model_final, c("I(log_BMI^3)", "I(log_BMI^2)"), vcov. = vcovHC(model_final, "HC1"))
+
+```
+
+```{r}
+
+linearHypothesis(model_final, c("HighBPTRUE", "HighCholTRUE:HighBPTRUE"), vcov. = vcovHC(model_final, "HC1"))
+linearHypothesis(model_final, c("HighCholTRUE", "HighCholTRUE:HighBPTRUE"), vcov. = vcovHC(model_final, "HC1"))
+
+```
+
+```{r}
+
+linearHypothesis(model_final, c("HeartDiseaseorAttackTRUE", "HeartDiseaseorAttackTRUE:StrokeTRUE"), vcov. = vcovHC(model_final, "HC1"))
+linearHypothesis(model_final, c("StrokeTRUE", "HeartDiseaseorAttackTRUE:StrokeTRUE"), vcov. = vcovHC(model_final, "HC1"))
+
+```
+
+```{r}
+print(names(coef(model_final)))
+linearHypothesis(model_final, c("FruitsTRUE", "FruitsTRUE:VeggiesTRUE"), vcov. = vcovHC(model_final, "HC1"))
+linearHypothesis(model_final, c("VeggiesTRUE", "FruitsTRUE:VeggiesTRUE"), vcov. = vcovHC(model_final, "HC1"))
+
+```
+
+
+```{r}
+
+linearHypothesis(model_final, c("MentHlth", "MentHlth:PhysHlth"), vcov. = vcovHC(model_final, "HC1"))
+linearHypothesis(model_final, c("PhysHlth", "MentHlth:PhysHlth"), vcov. = vcovHC(model_final, "HC1"))
+
+```
+
+
+
+
+```{r}
+
+age_categories <- c("Age25-29", "Age30-34", "Age35-39", "Age40-44", "Age45-49",
+                    "Age50-54", "Age55-59", "Age60-64", "Age65-69", "Age70-74",
+                    "Age75-79", "Age80+")
+
+# Побудова гіпотези для всіх категорій
+hypothesis <- paste(age_categories, "= 0")
+
+# Протестувати рівність нулю для всіх категорій віку одночасно
+test_result <- linearHypothesis(model_final, hypothesis, vcov. = vcovHC(model_final, "HC1"))
+print(test_result)
+
+```
+
+```{r}
+income_categories <- c("Income$10,000-$15,000", "Income$15,000-$20,000", 
+                       "Income$20,000-$25,000", "Income$25,000-$35,000", 
+                       "Income$35,000-$50,000", "Income$50,000-$75,000", 
+                       "Income$75,000 or more")
+
+hypothesis <- paste(income_categories, "= 0")
+
+test_result <- linearHypothesis(model_final, hypothesis, vcov. = vcovHC(model_final, "HC1"))
+
+print(test_result)
+
+```
+
+
+```{r}
+
+gen_health_categories <- c("GenHlthfair", "GenHlthgood", "GenHlthpoor", "GenHlthvery good")
+
+hypothesis <- paste(gen_health_categories, "= 0")
+
+test_result <- linearHypothesis(model_final, hypothesis, vcov. = vcovHC(model_final, "HC1"))
+print(test_result)
+
+```
+
+
+```{r}
+education_categories <- c("EducationElementary", "EducationSome high school", 
+                          "EducationHigh school graduate", "EducationSome college or tech. school", 
+                          "EducationCollege graduate")
+
+hypothesis <- paste(education_categories, "= 0")
+
+test_result <- linearHypothesis(model_final, hypothesis, vcov. = vcovHC(model_final, "HC1"))
+
+print(test_result)
+```
+
